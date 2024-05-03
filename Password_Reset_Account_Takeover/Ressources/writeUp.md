@@ -1,30 +1,31 @@
 # Write up Reset Password Account Takeover
+## Exploration
 
-# Exploration
+On the `signin` page, there is a "Forgot Password" functionality. The interface contains only one button, `Submit`. Upon clicking it, we receive an error message, "Wrong Answer":
 
-Sur la page de login (**signin**), il y a une fonctionnalité de reset de password. En naviguant dessus, il n’y a qu’un seul bouton, **Submit**. En cliquant dessus, nous obtenons une réponse, **Wrong Answer:**
+![Capture d’écran 2024-05-02 à 18.50.38.png](images/Capture_decran_2024-05-02_a_18.50.38.png)
 
-![Capture d’écran 2024-05-02 à 18.50.38.png](images/Capture_decran_2024-05-02_a_18.50.38.png)
+## Exploitation
 
-# Exploitation
+Upon inspecting the source code of the page, we notice a hidden value that contains the email address to which the password reset link will be sent:
 
-En observant le code source de la page, on remarque qu’une valeur est **hidden**, et contient le mail à qui sera renvoyé la réinitialisation de mot de passe:
+![Capture d’écran 2024-05-02 à 18.52.11.png](images/Capture_decran_2024-05-02_a_18.52.11.png)
 
-![Capture d’écran 2024-05-02 à 18.52.11.png](images/Capture_decran_2024-05-02_a_18.52.11.png)
+Here, the email will be sent to `webmaster@borntosec.com`.
 
-Ici, le mail sera envoyé à **webmaster@borntosec.com**.
+By modifying the HTML code and returning the email address, we obtain the flag:
 
-Si l’on modifie le code HTML et que l’on renvoie le mail, nous obtenons le flag:
+![Capture d’écran 2024-05-02 à 18.53.13.png](images/Capture_decran_2024-05-02_a_18.53.13.png)
 
-![Capture d’écran 2024-05-02 à 18.53.13.png](images/Capture_decran_2024-05-02_a_18.53.13.png)
+## Remediation
 
-# Remédiation
+A password reset account takeover is a common vulnerability found in web applications. It allows an attacker to register an email address they control for receiving the password reset link of a legitimate
+user, and thus gain access to their account.
 
-Un account takeover par reset de mot de passe est une vulnérabilité courant sur les applications web. Cela permet à un acteur malveillant de renseigner un mail qu’il contrôle pour récupérer le mot de passe d’un utilisateur légitime, et ainsi accéder à son compte.
+In this case, we could take control of the `webmaster` account, which could have severe consequences for the website owners.
 
-Dans le cas présent, nous pourrions prendre le contrôle du compte **webmaster**, qui pourrait avoir de grave conséquences pour les propriétaires du site.
+To mitigate this vulnerability, here are some recommendations:
 
-Pour remédier à cette vulnérabilité, voici quelques recommandation:
-
-- Vérifier que l’utilisateur est légitime à faire une demande de reset de mot de passe. Dans le cas présent, notre session ne devrait pas avoir la possibilité de faire une demande de mot de passe pour l’utilisateur webmaster avec un email différent
-- Dans la situation où il ne peut y avoir qu’un seul utilisateur (webmaster) d’enregistré, ne pas permettre de changer le mail côté client, et toujours l’envoyer au même mail
+- Verify that the user requesting a password reset is indeed the legitimate owner of the account. In this scenario, our session should not be able to request a password reset for the `webmaster` user with
+an email different from `webmaster@borntosec.com`
+- In situations where only one registered user (webmaster) exists, prevent changing the email address client-side and always send it to the same email address
