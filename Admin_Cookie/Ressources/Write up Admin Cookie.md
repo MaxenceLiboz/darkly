@@ -2,37 +2,38 @@
 
 # Exploration
 
-En arrivant sur la page principale de l’application, un cookie nous est attribué:
+Upon arriving on the main page of the application, a cookie is assigned to us:  
 
 ```bash
 Set-Cookie: I_am_admin=68934a3e9455fa72420237eb05902327; expires=Wed, 24-Apr-2024 20:51:16 GMT; Max-Age=3600
 ```
 
-Ce cookie à l’air d’être lié au fait que nous ayons ou non le rôle **admin**. On peut aussi noter qu’il ne possède pas l’attribut **HttpOnly**, permettant ainsi d’y accéder via du code javascript.
+This cookie seems to be related to whether or not we have the admin role. We can also note that it does not have the **HttpOnly** attribute, allowing it to be accessed via JavaScript code.
+
 
 # Exploitation
 
-Le cookie possède une valeur qui est du **md5**. Nous pouvons facilement récupérer cette valeur avec un [outil en ligne](https://md5decrypt.net/), étant donné que c’est une valeur prévisible:
+The cookie has a value that is an md5 hash. We can easily retrieve this value with an [online tool](https://md5decrypt.net/), since it is a predictable value:
 
 ![Capture d’écran 2024-05-01 à 14.19.46.png](images/Capture_decran_2024-05-01_a_14.19.46.png)
 
-Ainsi, nous n’avons pas le rôle admin, du à la valeur de ce cookie qui est un booléen .
-
-Nous avons essayé de changer cette valeur à **true** avec cette commande bash:
+Thus, we do not have the admin role, due to the value of this cookie which is a boolean. We tried to change this value to **true** with this bash command:
 
 ```bash
 ~ echo -n 'true' | md5
 b326b5062b2f0e69046810717534cb09
 ```
 
-En remplaçant la valeur actuelle du cookie par celle ci, on obtient le flag.
+By replacing the current value of the cookie with this one, we obtain the flag.
 
-# Remédiation
+# Remediation
 
-Pour remédier à cette vulnérabilité, plusieurs mesures sont nécessaires:
+To remedy this vulnerability, several measures are necessary:
 
-- Ne pas utiliser une valeur booléenne ou prédictible dans un cookie de session
-- Implémenter un système d’autorisation avec un cookie de session contenant une valeur aléatoire et non prédictible, tel qu’un JWT
-- Stocker la correspondance jeton/rôle côté serveur, un jeton **I_am_admin** ne devrait pas être présent côté client
 
-Bien que cela n’ai pas eu d’impact ici, il est aussi important de marquer les cookies avec l’attribut HttpOnly, pour éviter qu’il soit accessible depuis du code Javascript par exemple.
+- Do not use a boolean or predictable value in a session cookie
+- Implement an authorization system with a session cookie containing a random and unpredictable value, such as a JWT
+- Store the token/role correspondence on the server side, an **I_am_admin** token should not be present on the client side
+
+
+Although it did not have an impact here, it is also important to mark the cookies with the HttpOnly attribute, to prevent them from being accessible from JavaScript code, for example.
