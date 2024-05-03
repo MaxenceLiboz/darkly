@@ -1,43 +1,43 @@
 # Write up Local File Inclusion
 
-# Exploration
+## Exploration
 
-Durant notre naviguation à travers le site, nous avons remarqué que les pages était chargées à partir du paramètre **page**, à partir de **index.php**:
+During our navigation through the site, we noticed that pages were being loaded from the **page** parameter in `index.php`:
 
-![Capture d’écran 2024-05-01 à 23.58.41.png](images/Capture_decran_2024-05-01_a_23.58.41.png)
+![Capture d'écran 2024-05-01 à 23:58:41.png](images/Capture_decran_2024-05-01_a_23.58.41.png)
 
-# Exploitation
+## Exploitation
 
-Nous avons essayé différents payloads de LFI (Local File Inclusion).
+We tried various Local File Inclusion (LFI) payloads.
 
-Le principe de ces payloads est assez simple. Assumons de se dire que le code de la page **index.php** contient ceci:
+The principle of these payloads is simple. Let's assume that the code of page `index.php` contains this:
 
 ```php
 <?php
-		$allowedDir = '/chemin/de/nos/pages/';
-    $file = $_GET['page'];
-    $file = $allowedDir . $file
-    include($file);
+$allowedDir = '/path/to/our/pages/';
+$file = $_GET['page'];
+$file = $allowedDir . $file;
+include($file);
 ?>
 ```
 
-Si nous effectuons une requête avec comme paramètre **survey.php**, le serveur renverra donc la page **/chemin/de/nos/pages/survey.php**.
+If we make a request with the parameter `survey.php`, the server will return the page `/path/to/our/pages/survey.php`. However, if instead of `survey.php`, we ask for the file `../../../etc/passwd`, then
+the server will give us this time the file `/path/to/our/pages/../../../etc/passwd`, which actually corresponds to the file `/etc/passwd`, which should not be accessible.
 
-Par contre, si à la place de **survey.php**, nous demandons le fichier **../../../../etc/passwd**, alors le serveur nous renverra cette fois le fichier **/chemin/de/nos/pages/../../../../etc/passwd**, qui correspond finalement au fichier **/etc/passwd**, qui ne devrait pas être accessible.
+We made this request and obtained the flag:
 
-Nous avons donc effectué cette requête et obtenu le flag:
+![Capture d'écran 2024-05-02 à 0:08:22.png](images/Capture_decran_2024-05-02_a_00.08.22.png)
 
-![Capture d’écran 2024-05-02 à 00.08.22.png](images/Capture_decran_2024-05-02_a_00.08.22.png)
+## Remediation
 
-# Remédiation
+Local File Inclusion vulnerabilities can have critical consequences for a server, leading in the worst case to remote command execution, but also to file reading, source code access, sensitive information
+leakage such as passwords, configuration files etc...
 
-Les vulnérabilités de Local File Inclusion peuvent avoir des conséquences critiques pour un serveur, pouvant mener dans le pire des cas à une exécution de commande à distance, mais aussi à la lecture du code source, accès à des fichiers contenant des informations sensibles telle que des mots de passes, fichiers de configuration etc..
+Therefore, it is very important to protect against them.
 
-Il est donc très important de s’en prémunir.
+Depending on the needs, it may not always be possible to protect in the same way, but here are some general recommendations:
 
-En fonction des besoins il n’est pas toujours possible de se protéger de la même manière, mais voici quelques recommandations générales:
-
-- Validation de l’entrée utilisateur, par exemple en n’acceptant que des caractères alphanumériques pour le nom du fichier demandé
-- Mise en place d’une whitelist de fichier auquel les clients peuvent accéder
-- Limiter l’accès des utilisateurs au seul dossier utile pour le serveur web, par exemple **/var/www/html**
-- Résoudre les chemins avant de les utiliser, il est possible d’utiliser la fonction `realpath` en PHP
+- User input validation, for example by only accepting alphanumeric characters for the requested file name
+- Implementing a whitelist of files that clients can access
+- Limiting user access to only the necessary directory for the web server, such as `/var/www/html`
+- Resolve paths before using them, it is possible to use the `realpath()` function in PHP.
