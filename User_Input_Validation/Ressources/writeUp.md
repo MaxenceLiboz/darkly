@@ -1,32 +1,34 @@
 # Write up User Input Validation
 
-# Exploration
+## Exploration
 
-En naviguant à travers l’application web, nous sommes tombés sur une page faisant office d’enquête, permettant de voter pour des personnes:
+While navigating through the web application, we stumbled upon a page acting as a survey, allowing users to vote for individuals and assign them a grade between 1 and 10:
 
-![Capture d’écran 2024-05-01 à 23.42.56.png](images/Capture_decran_2024-05-01_a_23.42.56.png)
+![Capture d'écran 2024-05-01 à 23.42.56.png](images/Capture_decran_2024-05-01_a_23.42.56.png)
 
-Il est possible de voter pour la personne que l’on veut, et de lui donner un grade entre 1 et 10.
+Users can vote for their preferred individual and assign a grade between 1 and 10.
 
-# Exploitation
+## Exploitation
 
-A première vue, il n’y avait rien d’anormal sur cette page. Nous avons alors essayé de modifier la valeur attendue, ici entre 1 et 10, par 42. Il suffit d’effectuer la requête directement au backend sans passer par le frontend.
+At first glance, there was nothing unusual about this page. We then attempted to modify the expected value, i.e., between 1 and 10, to 42 by making a direct request to the backend without passing through
+the frontend.
 
-Nous pouvons utiliser cette requête pour l’effectuer:
+We can use this request for that purpose:
 
-```jsx
+```bash
 curl -X POST 'http://192.168.64.36/?page=survey' -d 'sujet=2&valeur=42' | grep flag
 [... TRUNCATED DATA ...]
 The flag is 03a944b434d5baff05f46c4bede5792551a2595574bcafc9a6e25f67c382ccaa
 [... TRUNCATED DATA ...]
 ```
 
-Nous avons ainsi pu récupérer le flag.
+We were thus able to obtain the flag.
 
-# Remédiation
+## Remédiation
 
-Nous sommes ici à un problème de validation de l’entrée utilisateur. L’application web effectue un contrôle côté frontend, mais la valeur envoyée par le client n’est pas validée du côté backend. Dans la situation présente, cela peut permettre de fausser totalement l’enquête en cours.
+Here, we face a User Input Validation issue. The web application performs client-side validation but fails to validate user input on the server side. In this case, it can allow for completely tampering
+with the ongoing survey.
 
-Pour pallier à cette vulnérabilité, il est important de mettre en place une validation de l’input de l’utilisateur côté serveur. La valeur attendue est déjà connue, elle doit correspondre à un nombre entre 1 et 10.
+To mitigate this vulnerability, it's crucial to implement server-side input validation. The expected value is already known and should correspond to a number between 1 and 10.
 
-Ainsi, tout entrée différente devrait être rejetée.
+Therefore, any other input must be rejected.
