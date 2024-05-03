@@ -1,91 +1,91 @@
 # Write up SQL Injection page member
 
-# Exploration
+## Exploration
 
-Durant notre exploration de l’application web, nous sommes tombés sur une fonctionnalité pour retrouver des informations sur les membres à partir de leur ID:
+During our exploration of the web application, we came across a feature to retrieve information about members based on their ID:
 
 ![Capture d’écran 2024-05-02 à 19.32.58.png](images/Capture_decran_2024-05-02_a_19.32.58.png)
 
-# Exploitation
+## Exploitation
 
-Etant donné que cette fonctionnalité permet de retrouver des utilisateurs, nous avons déduis qu’elle avait une interaction avec la base de donnée et était donc potentiellement vulnérable aux injections SQL. Pour s’en convaincre, une simple quote comme ID permet de trigger une erreur:
+Given that this functionality allows finding users, we deduced that it interacts with the database and could be potentially vulnerable to SQL injection. To confirm, a simple quote as ID can trigger an
+error:
 
-![Capture d’écran 2024-05-02 à 19.34.34.png](images/Capture_decran_2024-05-02_a_19.34.34.png)
+![image](images/Capture_decran_2024-05-02_a_19.34.34.png)
 
-A priori, notre input n’est pas vérifié avant de faire la requête en base de donnée.
+Initially, our input is not verified before making the database query. Our objective is to try and recover the database content from this SQL injection.
 
-Notre objectif est donc d’essayer de récupérer le contenu de la base de donnée à partir de cette injection SQL.
-
-On peut imaginer que la requête SQL de base ressemble à ca:
+We believe that the base SQL query looks like:
 
 ```php
-#Le premier ? correspond au nombre de colonnes renvoyées que nous devons déterminer
-#Nous pouvons penser qu'il y en à 2 correspondant à first name et surname
+# The first ? corresponds to the number of columns returned that we need to determine
+# We assume there are 2, for first name and last name
 
-#Le deuxième est à vérifier, est ce que la table se nomme users
-SELECT ? FROM users? WHERE id=<notre_payload>;
+SELECT ? FROM users? WHERE id=<our_payload>;
 ```
 
-Nous allons tout d’abord s’assurer du nombre de colonnes renvoyées avec ce payload, en se basant sur une injection UNION based:
+First, we'll ensure the number of columns returned using an injection with UNION:
 
-**1 UNION SELECT null,null**
+**1. UNION SELECT null,null**
 
-Il fonctionne. Pour s’en assurer, on supprime un null et on renvoie la requête, on obtient une erreur SQL:
+This works. To confirm, we remove a null and run the query again, we get an SQL error:
 
-![Capture d’écran 2024-05-02 à 19.42.52.png](images/Capture_decran_2024-05-02_a_19.42.52.png)
+![image](images/Capture_decran_2024-05-02_a_19.42.52.png)
 
-Pour comprendre le payload, il faut comprendre comment fonctionne UNION en sql. Il permet de lier à la requête d’autre données mais dois renvoyé le même nombre de donnée que la première query. Les types doivent aussi correspondre, c’est pourquoi utiliser **null** est le candidat idéal, il correspond à tous les types.
+To understand the payload, it's essential to comprehend how UNION in SQL functions. It allows combining other data with a query but must return the same number of data as the first query. Data types should
+also correspond, making **null** an ideal candidate.
 
-Le payload suivant va nous permettre de récupérer tout les noms de tables de la base de donnée:
+The following payload will allow us to recover all table names from the database:
 
-**1 UNION SELECT null,table_name FROM information_schema.tables**
+**1. UNION SELECT null,table_name FROM information_schema.tables**
 
-On obtient beaucoup d’output, mais confirmons que la table **users** existe:
+We get a lot of output, but let's confirm that the 'users' table exists:
 
-![Capture d’écran 2024-05-02 à 19.46.57.png](images/Capture_decran_2024-05-02_a_19.46.57.png)
+![image](images/Capture_decran_2024-05-02_a_19.46.57.png)
 
-La prochaine étape est d’obtenir les noms des colonnes de cette tables. Nous allons utiliser ce payload:
+Next, we will obtain the column names for this table:
 
-**1 UNION SELECT null,column_name FROM information_schema.columns**
+**1. UNION SELECT null,column_name FROM information_schema.columns**
 
-Nous obtenons encore une fois beaucoup d’output, mais trouvons un ensemble de colonnes qui on l’air liées au user:
+We get a lot of output again, but we find a set of columns that seem related to users:
 
-![Capture d’écran 2024-05-02 à 19.54.00.png](images/Capture_decran_2024-05-02_a_19.54.00.png)
+![image](images/Capture_decran_2024-05-02_a_19.54.00.png)
 
-On va donc récupérer l’ensemble de ces valeurs en les concaténants:
+So we will recover all these values by concatenating them:
 
-**1 UNION SELECT null,CONCAT(first_name,0x0a,last_name,0x0a,town,0x0a,country,0x0a,planet,0x0a,Commentaire,0x0a,countersign) FROM users**
+**1. UNION SELECT null,CONCAT(first_name, 0x0a, last_name, 0x0a, town, 0x0a, country, 0x0a, planet, 0x0a, Commentaire, 0x0a, countersign) FROM users**
 
-Et on obtient ce qu’on cherchait:
+And we obtain what we were looking for:
 
-![Capture d’écran 2024-05-02 à 19.59.27.png](images/Capture_decran_2024-05-02_a_19.59.27.png)
+![image](images/Capture_decran_2024-05-02_a_19.59.27.png)
 
-On decrypte la valeur **5ff9d0165b4f92b14994e5c685cdce28** en utilisant cet [outil en ligne](https://md5decrypt.net/), qui nous donne la valeur **FortyTwo**.
+We decode the value **5ff9d0165b4f92b14994e5c685cdce28** using this [online decryptor](https://md5decrypt.net/), which gives us the value **FortyTwo**.
 
-En suivant les conseils donnés, on le passe en lowercase et on le convertit en sha256, on obtient le flag:
+Following the suggestions given, we convert it to lowercase and calculate its SHA-256 hash:
 
 ```php
 echo -n "fortytwo" | openssl dgst -sha256
 SHA2-256(stdin)= 10a16d834f9b1e4068b25c4c46fe0284e99e44dceaf08098fc83925ba6310ff5
 ```
 
-# Remédiation
+## Remediation
 
-Les injections SQL sont des vulnérabilités encore très fréquentes sur les applications web si l’on se refère au [top 10 OWASP](https://owasp.org/Top10/fr/). En 2021, les injections (tout types confondus) se classent encore en 3ème place:
+SQL injections are still among the most common vulnerabilities for web applications according to the [OWASP Top 10](https://owasp.org/Top10/fr/). In 2021, SQL injections (of all types) ranked as the third
+most common issue:
 
-![Capture d’écran 2024-05-02 à 20.04.09.png](images/Capture_decran_2024-05-02_a_20.04.09.png)
+![Capture d’écran 2024-05-02 à 20.04.09.png](images/Capture_decran_2024-05-02_a_20.04.09.png)
 
-Cela mène souvent à de terribles conséquences pour les sites vulnérables, incluant:
+This can lead to severe consequences for vulnerable websites, including:
 
-- Altération ou suppression des données présentes
-- Élévation de privilèges
-- Leak d’information
-- Éxecution de commande à distance
+- Data manipulation or deletion
+- Privilege escalation
+- Information leaks
+- Remote code execution
 
-Pour s’en protéger, voici plusieurs étapes à suivre:
+To protect against SQL injection, follow these steps:
 
-- Utilisation d’ORM permettant d’utiliser des requêtes préparées
-- Validation de l’input de l’utilisateur
-- Ne jamais utiliser de la donnée contrôlable par l’utilisateur dans des requêtes SQL
-- Suivre le principe du moindre privilège
-- Chiffrer les données sensibles en base de donnée
+1. Use an ORM that supports prepared statements.
+2. Validate user input.
+3. Never use user-controllable data in SQL queries.
+4. Follow the principle of least privilege.
+5. Encrypt sensitive database data.
