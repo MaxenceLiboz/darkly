@@ -1,46 +1,46 @@
 # Write up Reflected XSS Media
 
-# Exploration
+## Exploration
 
-Durant notre exploration, nous somme tombés sur un formulaire de feedback, ou nous pouvions laissé un commentaire, qui était ensuite stocké et reflété sur cette page:
+During our exploration, we came across a feedback form where we could leave a comment which was then reflected on this page:
 
 ![Capture d’écran 2024-05-02 à 21.04.31.png](images/Capture_decran_2024-05-02_a_21.04.31.png)
 
-# Exploitation
+## Exploitation
 
-Nous avons rapidement pensé à la possibilité d’une stored XSS, ce genre de fonctionnalité étant souvent vulnérable.
+We quickly thought of the possibility of Reflected XSS, as this type of functionality is often vulnerable.
 
-Nous avons donc rentrés des payloads classiques de xss, et avons remarqué que nos balises **\<script\>** étaient trimées de nos commentaires:
+So we entered common XSS payloads, and noticed that our `<script>` tags were being stripped from our comments:
 
 ![Capture d’écran 2024-05-02 à 21.06.17.png](images/Capture_decran_2024-05-02_a_21.06.17.png)
 
 ![Capture d’écran 2024-05-02 à 21.06.25.png](images/Capture_decran_2024-05-02_a_21.06.25.png)
 
-En revanche, une XSS stockée à fonctionné dans le name, avec comme payload:
+However, an XSS payload did work in the name field with the following:
 
-**\<img src=a onerror=alert(1)\>**
+`<img src=a onerror=alert(1)>`
 
 ![Capture d’écran 2024-05-02 à 21.10.11.png](images/Capture_decran_2024-05-02_a_21.10.11.png)
 
-Après beaucoup de payloads utilisés (6000) (merci Intruder), et plusieurs tests de plus en plus étranges, il semble qu’il suffisait simplement d’écrire **script** en tant que commentaire pour obtenir le flag. Pourquoi pas.
+After using many payloads (6000, thanks Intruder), and several odd tests, it seems that simply writing `script` as a comment gave us the flag. Why not.
 
-Et c’est ainsi que nous l’avons obtenu:
+And that's how we got it:
 
 ![Capture d’écran 2024-05-02 à 21.18.42.png](images/Capture_decran_2024-05-02_a_21.18.42.png)
 
-# Remédiation
+## Remédiation
 
-Nous sommes ici face à une Stored XSS. L’impact d’une telle vulnérabilité peut avoir de grosses conséquences, étant donné que l’injection est enregistrée dans la base de donnée, et sera exécuté dans le navigateur de chaque personne ou elle sera exposée.
+Here we are dealing with a Stored XSS. The impact of such vulnerability can be significant, as the injection is stored in the database and executed in each user's browser where it is exposed.
 
-Les conséquences peuvent être multiples:
+The consequences can be numerous:
 
-- Vol de cookie de session
-- Escalade de privilèges
+- Session cookie theft
+- Privilege escalation
 - Defacing
-- etc..
+- etc...
 
-Pour remédier à cette vulnérabilité, voici quelques précautions à suivre:
+To remediate this vulnerability, here are some precautions to take:
 
-- Validation de l’input utilisateur, et encoder ou supprimer les caractères spéciaux. Des librairies sont spécialement conçues pour ca
-- Encoder les sorties des caractères spéciaux en HTML, surtout quand l’input de l’utilisateur est reflété
-- Configurer des des en têtes de sécurités appropriés, tels que les CSP (Content Security Policy) pour atténuer l’impact XSS
+- User input validation and encode or remove special characters. Libraries are specifically designed for this
+- Encode output special characters in HTML, especially when reflecting user input
+- Configure appropriate headers such as CSP (Content Security Policy) to mitigate XSS impact
