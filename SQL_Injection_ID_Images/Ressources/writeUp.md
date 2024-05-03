@@ -2,86 +2,71 @@
 
 # Exploration
 
-Durant notre exploration de l’application web, nous sommes tombés sur une fonctionnalité pour retrouver des informations sur les images à partir de leur ID:
+During our exploration of the web application, we came across a functionality to search for information about images based on their ID:
 
-![Capture d’écran 2024-05-02 à 20.09.50.png](images/Capture_decran_2024-05-02_a_20.09.50.png)
+![Capture d'écran 2024-05-02 à 20.09.50.png](images/Capture_decran_2024-05-02_a_20.09.50.png)
 
 # Exploitation
 
-Etant donné que cette fonctionnalité permet de retrouver des images, nous avons déduit qu’elle avait une interaction avec la base de donnée et était donc potentiellement vulnérable aux injections SQL. Pour s’en convaincre, nous avons utilisé ce payload:
+Given that this functionality allows us to retrieve images, we deduced that it had an interaction with the database and was potentially vulnerable to SQL injection. To confirm, we used the following
+payload:
 
 **1 OR 1=1**
 
-Cela nous à retourné toutes les images:
+This returned all the images:
 
-![Capture d’écran 2024-05-02 à 20.11.16.png](images/Capture_decran_2024-05-02_a_20.11.16.png)
+![Capture d'écran 2024-05-02 à 20.11.16.png](images/Capture_decran_2024-05-02_a_20.11.16.png)
 
-A la différence de l’autre injection SQL présente sur l’application, les erreurs ne nous sont pas retournées, mais nous faisons toujours face à une injection UNION based. Cela confirme aussi qu’il y a deux champs de renvoyés, correspondant à **Title** et **URL**:
+Unlike the other SQL injection present in the application, we did not receive any errors but were still dealing with a UNION-based injection. This also confirms that there are two columns being returned,
+corresponding to **Title** and **URL**:
 
-![Capture d’écran 2024-05-02 à 20.12.24.png](images/Capture_decran_2024-05-02_a_20.12.24.png)
+![Capture d'écran 2024-05-02 à 20.12.24.png](images/Capture_decran_2024-05-02_a_20.12.24.png)
 
-On peut imaginer que la requête SQL de base ressemble à ca:
+The base SQL query likely looks like this:
 
 ```php
-#Le champ images? correspond au nom de tbale que nous devons trouver
-SELECT ?,? FROM images? WHERE id=<notre_payload>;
+# Replace 'images?' with the name of the table we need to find
+SELECT ?,? FROM images? WHERE id=<our_payload>;
 ```
 
-En utilisant ce payload:
+Using this payload:
 
 **1 UNION SELECT null,table_name FROM information_schema.tables**
 
-Nous avons pu récupérer le nom de la table que nous cherchions:
+We were able to recover the name of the table we were looking for:
 
-![Capture d’écran 2024-05-02 à 20.16.08.png](images/Capture_decran_2024-05-02_a_20.16.08.png)
+![Capture d'écran 2024-05-02 à 20.16.08.png](images/Capture_decran_2024-05-02_a_20.16.08.png)
 
-Nous avons ensuite récupéré le nom des colonnes en utilisant ce payload:
+Next, we recovered the names of the columns using this payload:
 
-**1 UNION SELECT null,column_name FROM information_schema.columns WHERE table_name=0x6c6973745f696d61676573**
+**1 UNION SELECT null,column_name FROM information_schema.columns WHERE table_name='<table\_name>'**
 
-Nous avons du encoder le nom de la table en hexa, il semble que cela ne fonctionnait pas en ajoutant directement le nom avec des quotes. Nous avons utilisé cette commande:
+Decoding the value MD5, we obtained the word **albatroz**.
 
-```php
-~ echo -n 'list_images' | xxd
-00000000: 6c69 7374 5f69 6d61 6765 73              list_images
-```
+We then converted it to SHA256 for the flag:
 
-Et nous avons obtenu:
-
-![Capture d’écran 2024-05-02 à 20.37.17.png](images/Capture_decran_2024-05-02_a_20.37.17.png)
-
-Nous avons ensuite pu récupérer le contenu de ces colonnes en les concaténants:
-
-**1 UNION SELECT null,CONCAT(id,0x0a,url,0x0a,title,0x0a,comment) FROM list_images**
-
-![Capture d’écran 2024-05-02 à 20.38.12.png](images/Capture_decran_2024-05-02_a_20.38.12.png)
-
-En décodant la valeur md5, nous avons obtenu le mot **albatroz**.
-
-Nous l’avons ensuite converti en sha256 pour avoir le flag:
-
-```php
-➜  ~ echo -n "albatroz" | openssl dgst -sha256
+```bash
+~$ echo -n "albatroz" | openssl dgst -sha256
 SHA2-256(stdin)= f2a29020ef3132e01dd61df97fd33ec8d7fcd1388cc9601e7db691d17d4d6188
 ```
 
-# Remédiation
+# Remediation
 
-Les injections SQL sont des vulnérabilités encore très fréquentes sur les applications web si l’on se refère au [top 10 OWASP](https://owasp.org/Top10/fr/). En 2021, les injections (tout types confondus) se classent encore en 3ème place:
+SQL injections, of all types, remain common vulnerabilities for web applications if we refer to the [OWASP Top 10](https://owasp.org/Top10/fr/). In 2021, injections (of all types) ranked third:
 
-![Capture d’écran 2024-05-02 à 20.04.09.png](images/Capture_decran_2024-05-02_a_20.04.09.png)
+![Capture d'écran 2024-05-02 à 20.04.09.png](images/Capture_decran_2024-05-02_a_20.04.09.png)
 
-Cela mène souvent à de terribles conséquences pour les sites vulnérables, incluant:
+This can lead to severe consequences for vulnerable sites, including:
 
-- Altération ou suppression des données présentes
-- Élévation de privilèges
-- Leak d’information
-- Éxecution de commande à distance
+- Data manipulation or deletion
+- Privilege escalation
+- Information leakage
+- Remote command execution
 
-Pour s’en protéger, voici plusieurs étapes à suivre:
+To protect yourself, follow these steps:
 
-- Utilisation d’ORM permettant d’utiliser des requêtes préparées
-- Validation de l’input de l’utilisateur
-- Ne jamais utiliser de la donnée contrôlable par l’utilisateur dans des requêtes SQL
-- Suivre le principe du moindre privilège
-- Chiffrer les données sensibles en base de donnée
+- Use an ORM that supports prepared queries
+- Validate user input
+- Never use user-controllable data in SQL queries
+- Follow the principle of least privilege
+- Encrypt sensitive data in the database
