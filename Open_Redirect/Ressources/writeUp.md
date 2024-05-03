@@ -1,32 +1,30 @@
 # Write up Open Redirect
 
-# Exploration
+## Exploration
 
-Sur la page d’accueil du site, en bas de pages, il y a 3 logos faisant respectivement référence à facebook, twitter et instagram.
+On the homepage of the website, at the bottom, there are three logos referring to Facebook, Twitter, and Instagram. If we click on them, we are redirected to the corresponding page:
 
-Si l’on clique dessus, nous sommes redirigés sur la page correspondante:
+![Screenshot 2024-05-02 19:21:06.png](images/Capture_decran_2024-05-02_a_19.21.06.png)
 
-![Capture d’écran 2024-05-02 à 19.21.06.png](images/Capture_decran_2024-05-02_a_19.21.06.png)
+## Exploitation
 
-# Exploitation
+Upon examining the link that redirects us, we notice that a page named `redirect` is being loaded with a parameter corresponding to the redirection. In the image above, you can see `facebook` as the value.
 
-En regardant le lien qui permet de nous rediriger, on remarque qu’une page est chargée, **redirect**, avec un paramètre qui correspond à la redirection. Sur l’image ci dessus, on peut voir **facebook** comme valeur.
+By modifying this value, we obtain the flag:
 
-En modifiant cette valeur, nous obtenons le flag:
+![Screenshot 2024-05-02 19:24:05.png](images/Capture_decran_2024-05-02_a_19.24.05.png)
 
-![Capture d’écran 2024-05-02 à 19.24.05.png](images/Capture_decran_2024-05-02_a_19.24.05.png)
+## Remediation
 
-# Remédiation
+An open redirect is a vulnerability that allows an attacker to redirect a victim to a website under their control without the victim's knowledge. The consequences can be severe:
 
-Un open redirect est une vulnérabilité qui permet à un acteur malveillant de rediriger une victime vers un site web qu’il contrôle sans s’en rendre compte. Les conséquences peuvent être multiples:
+- Phishing: The attacker redirects the victim to a phishing site to steal credentials
+- Cookie theft if passed in GET parameters
+- XSS: exploiting the vulnerability to inject JavaScript code onto the page
+- DDoS: using it for other attacks, such as a denial of service
 
-- Phishing: L’attaquant redirige la victime vers un site de phishing pour voler des identifiants
-- Vol de cookie si passé en paramètres GET
-- XSS: exploitation de la vulnérabilité pour injecter du code Javascript sur la page
-- Utilisation pour d’autres attaques, comme du déni de service
+To mitigate this vulnerability, several steps are necessary:
 
-Pour remédier à cette vulnérabilités, plusieurs étapes sont nécessaires:
-
-- Whitelist: mettre en place une whitelist de domaine autorisés pour la redirection
-- Validation de l’input utilisateur, pour s’assure qu’il s’agit d’une URL valide
-- Ne pas passer de token d’identification en paramètre GET
+- Whitelist: Implement a whitelist of authorized domains for redirection
+- User input validation, to ensure the URL is valid
+- Do not pass identification tokens in GET parameters
