@@ -1,42 +1,48 @@
 # Write up Admin Panel Login
 
-# Exploration
+## Exploration
 
-Pendant notre phase d'exploration, nous avons trouvé le fichier **robots.txt** d'accessible.
+During our exploration phase, we found the accessible **robots.txt** file.
 
-Dans ce fichier étaient mentionnés 2 chemins, **/whatever** et **/.hidden**.
+In this file were mentioned two paths, `/whatever` and `/.hidden`.
 
-En naviguant sur le dossier **/whatever**, le listing du dossier est présent, et nous pouvons accéder à un fichier, **htpasswd:**
+Navigating to the `/whatever` directory, the listing of the directory is present, and we can
+access a file called `htpasswd`:
 
 ```bash
-#Contenu de htpasswd
+# htpasswd content
 root:437394baff5aa33daa618be47b75cb49
 ```
 
-Cela ressemble à un couple nom de compte/mot de passe d’un utilisateur root.
+This resembles a username/password pair of a user 'root'.
 
-Nous avons aussi découvert un autre chemin assez commun, **/admin**, avec une page de login.
+We also discovered another common path, `/admin`, with a login page.
 
-# Exploitation
+## Exploitation
 
-Le mot de passe précédemment trouvé est en fait un hash md5. Nous avons facilement pu retrouver le mot de passe de base via un [outil en ligne](https://md5decrypt.net/), étant donné que c’était un mot de passe très commun (qwerty123@)
+The previously found password is actually an md5 hash. We easily obtained the base password via an
+[online tool](https://md5decrypt.net/) since it was a very common password (qwerty123@).
 
-![Capture d’écran 2024-05-01 à 13.56.33.png](images/Capture_decran_2024-05-01_a_13.56.33.png)
+![Screen capture 2024-05-01 at 13:56:33.png](images/Capture_decran_2024-05-01_a_13.56.33.png)
 
-En utilisant la combinaison root:qwerty123@ nous avons pu nous connecter depuis le panel admin et obtenir le flag.
+Using the combination 'root:qwerty123@', we were able to log in to the admin panel and obtain the
+flag.
 
-# Remédiation
+## Remediation
 
-Le fichier htpasswd ne devrait jamais être exposé publiquement sur une application web. Il doit être stocké en dehors de l’arborescence servie par le serveur.
+The htpasswd file should never be exposed publicly on a web application. It must be stored outside
+of the served directory by the server.
 
-Il nous à aussi été possible de le trouver du au fait que le listing du répertoire était activé sur le chemin **/whatever**. Il est en général recommandé de toujours le désactiver, ce qui est la norme par défaut pour la plupart des serveurs web.
+We were also able to find it due to the listing being activated on the `/whatever` path. It is
+generally recommended to always disable it, which is the default for most web servers.
 
-Dernièrement, il est important d’instaurer une forte politique de mot de passe. Nous avons facilement pu décrypter le mot de passe de l’utilisateur root avec un simple outil en ligne, du au fait que le mot de passe était très courant.
+Lastly, it's essential to establish a strong password policy. We easily decrypted the 'root'
+user's password with a simple online tool due to its commonality.
 
-Les bonnes pratiques en terme de politique de mot de passe sont:
+Best practices for password policies include:
 
-- Au moins 12 caractères
-- Mélange de lettre majuscule et minuscule
-- Inclure des caractères spéciaux
-- Eviter des mots courants ou reliés à la personne
-- Les changer régulièrement
+- At least 12 characters
+- A mix of uppercase and lowercase letters
+- Include special characters
+- Avoid common or personally related words
+- Regularly change them.
