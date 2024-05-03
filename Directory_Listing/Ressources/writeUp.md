@@ -1,35 +1,36 @@
 # Write up Directory Listing
 
-# Exploration
+## Exploration
 
-Pendant notre phase d’exploration, nous avons trouvé le fichier **robots.txt** d’accessible.
+During our exploration phase, we found the accessible `robots.txt` file.
 
-Dans ce fichier étaient mentionnées 2 chemins, **/whatever**  et **/.hidden**.
+In this file were mentioned two paths, `/whatever` and `/.hidden`.
 
-En naviguant sur **/.hidden**, nous sommes tombé sur un **directory listing**:
+Navigating to `/.hidden`, we stumbled upon a **directory listing**:
 
-![Capture d’écran 2024-05-01 à 23.27.06.png](images/Capture_decran_2024-05-01_a_23.27.06.png)
+![Capture d'écran 2024-05-01 à 23:27:06.png](images/Capture_decran_2024-05-01_a_23.27.06.png)
 
-Il contient un ensemble de sous dossiers, avec dans chaque page un fichier **README**.
+It contained a set of subdirectories, each with a `README` file.
 
-# Exploitation
+## Exploitation
 
-Le contenu des fichiers **README** semble indiquer que ce que nous cherchons n’est jamais au bon endroit.
+The contents of the `README` files seem to indicate that what we were looking for was never in the right place.
 
-Nous avons donc écrit un petit script python pour naviguer à travers tous ces chemins, avec pour but de lire tout les fichiers **README** et de s’arrêter une fois découvert celui mentionnant notre flag, avec le chemin ou il a été découvert:
+We therefore wrote a small Python script to traverse all these paths with the intention of reading all `README` files and stopping once the one mentioning our flag, along with the path where it was found,
+was discovered:
 
-```jsx
+```python
 ~ python3 script.py
 [... TRUNCATED DATA ...]
 http://192.168.64.36/.hidden/whtccjokayshttvxycsvykxcfm/igeemtxnvexvxezqwntmzjltkt/lmpanswobhwcozdqixbowvbrhw/README
-Hey, here is your flag : d5eec3ec36cf80dce44a896f961c1831a05526ec215693c8f2c39543497d4466
+Here is your flag : d5eec3ec36cf80dce44a896f961c1831a05526ec215693c8f2c39543497d4466
 [... TRUNCATED DATA ...]
 ```
 
-# Remédiation
+## Remediation
 
-Le directory listing permet de lister tout les fichiers présents sur un chemin donné quand il n’y a pas d’index de présent (.html, .php etc), ou en fonction de la configuration du serveur web.
+A directory listing allows listing all files present on a given path when there is no index file (.html, .php etc.), or depending on the server web configuration.
 
-Il peut être utile dans certains cas, mais c’est généralement recommandé de le désactiver, principalement pour des questions de sécurité. Il peut divulguer des infos sensibles, comme des noms de fichiers, des versions de logiciels etc..
+It can be useful in certain cases, but it's generally recommended to disable it, mainly for security reasons. It can disclose sensitive information, such as filenames, software versions etc...
 
-Bien que cela ne représente pas de vulnérabilité en soit, cela peut permettre à une personne malveillante de mieux comprendre sa cible et d’étendre sa surface d’attaque.
+Although this doesn't represent a vulnerability per se, it can help a malicious person better understand their target and expand their attack surface.
