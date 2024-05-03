@@ -1,32 +1,42 @@
 # Write up Password Bruteforce
 
-# Exploration
+## Exploration
 
-Nous avons trouvé un panel de login durant notre énumération, disponible sur la page **signin:**
+During our enumeration, we discovered a login panel on the **signin:** page:
 
-![Capture d’écran 2024-05-01 à 20.22.48.png](images/Capture_decran_2024-05-01_a_20.22.48.png)
+![Capture d'écran 2024-05-01 à 20.22.48.png](images/Capture_decran_2024-05-01_a_20.22.48.png)
 
-# Exploitation
+## Exploitation
 
-Nous avons essayé quelques couple username/password par défaut, tel que **admin:admin**, mais cela n’a pas fonctionné.
+We tried some common default username/password combinations, like **admin:admin**, but it did not
+work.
 
-Nous avons donc essayé un bruteforce sur le login, en utilisant la wordlist **10-million-password-list-top-100.txt**, que nous avons trouvée dans [Seclists](https://github.com/danielmiessler/SecLists), qui regroupe une énorme base de donnée de tout type de wordlist.
+Instead, we decided to bruteforce the login using the wordlist
+**10-million-password-list-top-100.txt**, which we found on
+[Seclists](https://github.com/danielmiessler/SecLists), containing an enormous database of various
+types of wordlists.
 
-Pour ce faire, nous avons utilisé l’Intruder de burp suite:
+To carry out this operation, we used Burp Suite's Intruder:
 
-![Capture d’écran 2024-05-01 à 20.32.00.png](images/Capture_decran_2024-05-01_a_20.32.00.png)
+![Capture d’écran 2024-05-01 à 20.32.00.png](images/Capture_decran_2024-05-01_a_20.32.00.png)
 
-Une fois terminé, nous pouvons voir qu’une des **Length** de réponse est différentes de autres, avec le payload **shadow**. Cela indique une réponse différente, donc une connexion réussie.
+Upon completion, we observed that one of the **Length** responses was different from others, with
+the payload being **"shadow"**. This indicates a unique response, meaning a successful connection.
 
-Nous nous sommes donc connecté avec **admin:shadow** pour récupérer le flag. A noter que n’importe quel nom d’utilisateur fonctionnait pour avoir ce flag.
+We then logged in using **admin:shadow** to retrieve the flag. Note that any username worked for
+obtaining this flag.
 
-# Remédiation
+## Remediation
 
-Le bruteforce est une attaque couramment utilisée, qui peut avoir de grosses conséquences. Un utilisateur malveillant ayant accès à un compte d’administrateur d’une plateforme pourrait causer avoir des conséquences en terme d’intégrité, de confidentialité ou même de disponibilité, et ainsi causer des dommages à l’image de l’entreprise.
+Brute force attacks are commonly used techniques that can have severe consequences. A malicious
+user gaining access to an administrator account on a platform could result in damage to integrity,
+confidentiality or even availability, and harm the company's reputation.
 
-Pour s’en prémunir, voici quelques recommendations:
+To protect against this, here are some recommendations:
 
-- Limiter les tentatives de connexion, que ce soit par utilisateur ou par adresse IP sur une période de temps donnée
-- Ajouter un double facteur d’authentification
-- Introduire un délai exponentiel entre chaque tentative de connexion infructueuse, ralentissant considérablement une attaque de bruteforce
-- Exiger l’utilisation de mot de passe robuste, incluant au moins 12 caractères, ainsi qu’une combinaison de lettre majuscule et minuscule, des chiffres et caractères spéciaux.
+- Limit connection attempts, whether by user or IP address, within a given time frame
+- Implement two-factor authentication
+- Introduce an exponential delay between each failed login attempt, significantly slowing down a
+brute force attack
+- Require the use of robust passwords containing at least 12 characters and a combination of
+uppercase letters, lowercase letters, numbers, and special characters.
