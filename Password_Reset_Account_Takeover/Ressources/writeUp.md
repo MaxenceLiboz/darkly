@@ -13,7 +13,7 @@ Upon inspecting the source code of the page, we notice a hidden value that conta
 
 Here, the email will be sent to `webmaster@borntosec.com`.
 
-By modifying the HTML code and returning the email address, we obtain the flag:
+By modifying the the email address in the HTML code and send again the request, we obtain the flag:
 
 ![Capture d’écran 2024-05-02 à 18.53.13.png](images/Capture_decran_2024-05-02_a_18.53.13.png)
 

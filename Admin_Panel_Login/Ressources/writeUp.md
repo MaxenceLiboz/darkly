@@ -13,8 +13,7 @@ access a file called `htpasswd`:
 # htpasswd content
 root:437394baff5aa33daa618be47b75cb49
 ```
-
-This resembles a username/password pair of a user 'root'.
+This seems to be credentials for user 'root'.
 
 We also discovered another common path, `/admin`, with a login page.
 
@@ -33,8 +32,11 @@ flag.
 The htpasswd file should never be exposed publicly on a web application. It must be stored outside
 of the served directory by the server.
 
-We were also able to find it due to the listing being activated on the `/whatever` path. It is
+We were also able to find it due to the directory listing being activated on the `/whatever` path. It is
 generally recommended to always disable it, which is the default for most web servers.
+
+The admin panel should neither been accessible for any users. There are several solutions to this,
+like whitelisting authorized IP's to access it, or use a random generated path that can't be guessed.
 
 Lastly, it's essential to establish a strong password policy. We easily decrypted the 'root'
 user's password with a simple online tool due to its commonality.

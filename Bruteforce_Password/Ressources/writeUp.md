@@ -2,7 +2,7 @@
 
 ## Exploration
 
-During our enumeration, we discovered a login panel on the **signin:** page:
+During our enumeration, we discovered a login panel on the **signin** page:
 
 ![Capture d'écran 2024-05-01 à 20.22.48.png](images/Capture_decran_2024-05-01_a_20.22.48.png)
 
@@ -21,9 +21,9 @@ To carry out this operation, we used Burp Suite's Intruder:
 ![Capture d’écran 2024-05-01 à 20.32.00.png](images/Capture_decran_2024-05-01_a_20.32.00.png)
 
 Upon completion, we observed that one of the **Length** responses was different from others, with
-the payload being **"shadow"**. This indicates a unique response, meaning a successful connection.
+the payload being **"shadow"**. This indicates a different response, meaning a successful connection.
 
-We then logged in using **admin:shadow** to retrieve the flag. Note that any username worked for
+We then logged in using **admin:shadow** to retrieve the flag. Note that any username worked to
 obtaining this flag.
 
 ## Remediation

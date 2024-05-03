@@ -1,8 +1,8 @@
+# Arbitrary File Upload
 ## Exploration
 
 During our research, we discovered a file upload functionality on the `upload` page. An insecure
-file upload can have severe consequences for a web application if not properly implemented, with a
-critical one being remote command execution.
+file upload can have severe consequences for a web application if not properly implemented, remote command execution being the worst scenario.
 
 We attempted to perform a basic file upload using an image called `fleur.jpg`:
 

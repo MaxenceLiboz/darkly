@@ -30,4 +30,4 @@ Once again, with some thought, we deduced that it referred to the User-Agent hea
 Comments in source code are often left during the development of an application. These comments may contain a great deal of interesting information for an attacker, even going so far as to include
 administrator passwords.
 
-To mitigate this vulnerability, simply ensure that comments remain only in the source code of an application during production.
+To mitigate this vulnerability, simply ensure that comments remain only in the source code of an application during development phase, not production.

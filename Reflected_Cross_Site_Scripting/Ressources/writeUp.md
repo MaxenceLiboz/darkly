@@ -8,11 +8,11 @@ During our exploration, we noticed that clicking on an image redirected us to a 
 
 ## Exploitation
 
-Upon modifying the URL source with a random value, 'test', an error page appeared with our value reflected in an HTML tag:
+Upon modifying the **src** query parameter with a random value, 'test', an error page appeared with our value reflected in an HTML tag:
 
 ![Capture d’écran 2024-05-02 à 20.46.27.png](images/Capture_decran_2024-05-02_a_20.46.27.png)
 
-We attempted to input several XSS payloads in an attempt to obtain JavaScript execution and, after several tries, we succeeded:
+We attempted to input several XSS payloads in order to obtain JavaScript execution and, after several tries, we succeeded:
 
 ![Capture d’écran 2024-05-02 à 20.47.57.png](images/Capture_decran_2024-05-02_a_20.47.57.png)
 
@@ -23,7 +23,7 @@ documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/
 
 According to the explanations, we can load data directly encoded in base64 using this payload:
 
-**data:[<mediatype>][;base64],<data>**
+**data:[\<mediatype\>][;base64],\<data\>**
 
 Since our goal is to execute JavaScript code, we chose to use the mediatype **text/html**
 
@@ -35,7 +35,7 @@ echo -n '<script>alert(1)</script>' | base64
 
 Our final payload was therefore **data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==**
 
-We entered it into the 'src' parameter and obtained the flag:
+We entered it into the **src** query parameter and obtained the flag:
 
 ![Capture d’écran 2024-05-02 à 20.55.00.png](images/Capture_decran_2024-05-02_a_20.55.00.png)
 

@@ -10,7 +10,7 @@ During our navigation through the site, we noticed that pages were being loaded 
 
 We tried various Local File Inclusion (LFI) payloads.
 
-The principle of these payloads is simple. Let's assume that the code of page `index.php` contains this:
+The principle of these payloads is simple. Let's assume that the code of page `index.php` work this way:
 
 ```php
 <?php
@@ -21,7 +21,7 @@ include($file);
 ?>
 ```
 
-If we make a request with the parameter `survey.php`, the server will return the page `/path/to/our/pages/survey.php`. However, if instead of `survey.php`, we ask for the file `../../../etc/passwd`, then
+If we make a request with the parameter `survey.php`, the server will return the page `/path/to/our/pages/survey.php`. However, if instead of `survey.php`, we request the file `../../../etc/passwd`, then
 the server will give us this time the file `/path/to/our/pages/../../../etc/passwd`, which actually corresponds to the file `/etc/passwd`, which should not be accessible.
 
 We made this request and obtained the flag:

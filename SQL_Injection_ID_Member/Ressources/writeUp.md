@@ -26,18 +26,18 @@ SELECT ? FROM users? WHERE id=<our_payload>;
 
 First, we'll ensure the number of columns returned using an injection with UNION:
 
-**1. UNION SELECT null,null**
+**1 UNION SELECT null,null**
 
 This works. To confirm, we remove a null and run the query again, we get an SQL error:
 
 ![image](images/Capture_decran_2024-05-02_a_19.42.52.png)
 
-To understand the payload, it's essential to comprehend how UNION in SQL functions. It allows combining other data with a query but must return the same number of data as the first query. Data types should
+To understand the payload, it's essential to comprehend how UNION work in SQL functions. It allows combining other data with a query but must return the same number of data as the first query. Data types should
 also correspond, making **null** an ideal candidate.
 
 The following payload will allow us to recover all table names from the database:
 
-**1. UNION SELECT null,table_name FROM information_schema.tables**
+**1 UNION SELECT null,table_name FROM information_schema.tables**
 
 We get a lot of output, but let's confirm that the 'users' table exists:
 
@@ -45,7 +45,7 @@ We get a lot of output, but let's confirm that the 'users' table exists:
 
 Next, we will obtain the column names for this table:
 
-**1. UNION SELECT null,column_name FROM information_schema.columns**
+**1 UNION SELECT null,column_name FROM information_schema.columns**
 
 We get a lot of output again, but we find a set of columns that seem related to users:
 
@@ -53,7 +53,7 @@ We get a lot of output again, but we find a set of columns that seem related to 
 
 So we will recover all these values by concatenating them:
 
-**1. UNION SELECT null,CONCAT(first_name, 0x0a, last_name, 0x0a, town, 0x0a, country, 0x0a, planet, 0x0a, Commentaire, 0x0a, countersign) FROM users**
+**1 UNION SELECT null,CONCAT(first_name, 0x0a, last_name, 0x0a, town, 0x0a, country, 0x0a, planet, 0x0a, Commentaire, 0x0a, countersign) FROM users**
 
 And we obtain what we were looking for:
 
